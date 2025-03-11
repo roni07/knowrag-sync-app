@@ -1,7 +1,24 @@
-body {
+html, body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: transparent;
+}
+
+.app-wrapper {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .app-bar {
@@ -11,13 +28,12 @@ body {
     background-color: #333;
     padding: 10px;
     color: white;
+    flex: 0 0 auto;
+    -webkit-app-region: drag; /* Make app bar draggable */
 }
 
-.logo {
-    height: 40px;
-}
-
-.right-section button {
+.app-bar button {
+    -webkit-app-region: no-drag; /* Ensure buttons are clickable */
     background: none;
     border: none;
     color: white;
@@ -26,13 +42,54 @@ body {
     cursor: pointer;
 }
 
-.right-section button:hover {
+.app-bar button:hover {
     color: #ddd;
 }
 
+.logo {
+    height: 40px;
+}
+
+.page-container {
+    flex: 1; /* Take remaining space */
+    perspective: 1000px; /* 3D perspective */
+    position: relative;
+    overflow: hidden;
+    background-color: #fff; /* Background for the flipping area */
+}
+
+.page {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.6s ease-in-out;
+    transform-style: preserve-3d;
+}
+
+.default-page {
+    transform: rotateY(0deg);
+}
+
+.settings-page {
+    transform: rotateY(180deg);
+}
+
+.page-container.flipped .default-page {
+    transform: rotateY(-180deg);
+}
+
+.page-container.flipped .settings-page {
+    transform: rotateY(0deg);
+}
+
 .content {
+    flex: 1;
     padding: 20px;
     text-align: center;
+    overflow: auto;
 }
 
 #tray-btn {
@@ -40,3 +97,46 @@ body {
     font-size: 16px;
     cursor: pointer;
 }
+
+/*body {*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    font-family: Arial, sans-serif;*/
+/*}*/
+
+/*.app-bar {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*    background-color: #333;*/
+/*    padding: 10px;*/
+/*    color: white;*/
+/*}*/
+
+/*.logo {*/
+/*    height: 40px;*/
+/*}*/
+
+/*.right-section button {*/
+/*    background: none;*/
+/*    border: none;*/
+/*    color: white;*/
+/*    font-size: 20px;*/
+/*    margin-left: 10px;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.right-section button:hover {*/
+/*    color: #ddd;*/
+/*}*/
+
+/*.content {*/
+/*    padding: 20px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*#tray-btn {*/
+/*    padding: 10px 20px;*/
+/*    font-size: 16px;*/
+/*    cursor: pointer;*/
+/*}*/

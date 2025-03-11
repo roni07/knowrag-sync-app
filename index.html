@@ -6,18 +6,42 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="app-bar">
-    <div class="left-section">
-        <img src="assets/logo.svg" alt="Logo" class="logo">
+<div class="app-wrapper">
+    <!-- Fixed App Bar -->
+    <div class="app-bar">
+        <div class="left-section">
+            <img src="assets/logo.svg" alt="Logo" class="logo">
+        </div>
+        <div class="right-section">
+            <button id="settings-btn">
+                <img src="assets/icons/setting.svg" alt="Settings" class="settings-icon">
+            </button>
+            <button id="minimize-btn">
+                <img src="assets/icons/minimize.svg" alt="Minimize" class="minimize-icon">
+            </button>
+            <button id="close-btn">
+                <img src="assets/icons/close.svg" alt="Close" class="close-icon">
+            </button>
+        </div>
     </div>
-    <div class="right-section">
-        <button id="settings-btn">⚙️</button>
-        <button id="minimize-btn">-</button>
-        <button id="close-btn">×</button>
+
+    <!-- Container for Flipping Pages -->
+    <div class="page-container">
+        <!-- Default Page -->
+        <div class="page default-page" id="default-page">
+            <div class="content">
+                <button id="tray-btn">Minimize to Tray</button>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page settings-page" id="settings-page">
+            <div class="content">
+                <h2>Settings</h2>
+                <p>This is the settings page. Add your settings here.</p>
+            </div>
+        </div>
     </div>
-</div>
-<div class="content">
-    <button id="tray-btn">Minimize to Tray</button>
 </div>
 <script src="renderer.js"></script>
 </body>

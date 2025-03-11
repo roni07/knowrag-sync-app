@@ -21,7 +21,7 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false
         },
-        icon: path.join(__dirname, 'assets/icon.ico'), // Add your icon file here
+        icon: path.join(__dirname, 'assets/icon.png'), // Add your icon file here
         frame: false,
         titleBarStyle: "hidden",
         titleBarOverlay: false
@@ -41,9 +41,9 @@ function createWindow() {
 }
 
 function createTray() {
-    const iconPath = path.join(app.getAppPath(), 'assets', 'icon.ico');
+    const iconPath = path.join(app.getAppPath(), 'assets', 'icon.png');
     tray = new Tray(iconPath);
-    // tray = new Tray(path.join(__dirname, 'assets/icon.ico')); // Tray icon
+    // tray = new Tray(path.join(__dirname, 'assets/icon.png')); // Tray icon
 
     const contextMenu = Menu.buildFromTemplate([
         {

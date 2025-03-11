@@ -1,11 +1,3 @@
-/**
- * Created by WebStorm.
- * User: Mehedi Hasan
- * Date: 09 Mar 2025
- * Time: 12:04 PM
- * Email: mdmehedihasanroni28@gmail.com
- */
-
 const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
 
@@ -16,20 +8,20 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        frame: false,
+        transparent: true,
+        titleBarStyle: 'hidden',
+        titleBarOverlay: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
             contextIsolation: false
         },
-        icon: path.join(__dirname, 'assets/icon.ico'), // Add your icon file here
-        frame: false,
-        titleBarStyle: "hidden",
-        titleBarOverlay: false
+        icon: path.join(__dirname, 'assets/icon.ico')
     });
 
     mainWindow.loadFile('index.html');
 
-    // Hide instead of closing
     mainWindow.on('close', (e) => {
         if (!app.isQuitting) {
             e.preventDefault();
@@ -43,31 +35,16 @@ function createWindow() {
 function createTray() {
     const iconPath = path.join(app.getAppPath(), 'assets', 'icon.ico');
     tray = new Tray(iconPath);
-    // tray = new Tray(path.join(__dirname, 'assets/icon.ico')); // Tray icon
 
     const contextMenu = Menu.buildFromTemplate([
-        {
-            label: "Show App",
-            click: () => mainWindow.show()
-        },
-        {
-            label: "Hide App",
-            click: () => console.log('Option 1 clicked')
-        },
-        {
-            label: "Change Setting",
-            click: () => console.log('Option 2 clicked')
-        },
-        {
-            label: "Quit",
-            click: () => {
-                app.isQuitting = true;
-                app.quit();
-            }
-        }
+        { label: 'Open App', click: () => mainWindow.show() },
+        { label: 'Option 1', click: () => console.log('Option 1 clicked') },
+        { label: 'Option 2', click: () => console.log('Option 2 clicked') },
+        { label: 'Option 3', click: () => console.log('Option 3 clicked') },
+        { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } }
     ]);
 
-    tray.setToolTip('KnowRag Sync');
+    tray.setToolTip('KnowRag Sync App');
     tray.setContextMenu(contextMenu);
 
     tray.on('click', () => {
@@ -75,10 +52,11 @@ function createTray() {
     });
 }
 
-// Handle minimize to tray
 ipcMain.on('minimize-to-tray', () => {
     mainWindow.hide();
 });
+
+Menu.setApplicationMenu(null);
 
 app.whenReady().then(() => {
     createWindow();

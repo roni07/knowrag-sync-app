@@ -8,6 +8,7 @@
 
 const {app, BrowserWindow, Tray, Menu, ipcMain, dialog} = require('electron');
 const path = require('path');
+const chokidar = require("chokidar");
 const fs = require("fs").promises;
 const {exec} = require("child_process");
 
@@ -17,9 +18,11 @@ let tray;
 let config = {
     source: "",
     destination: "",
-    password: "",
+    password: "jb2023",
     autoSyncEnabled: false,
 };
+
+let watcher;
 
 const userDataPath = app.getPath("userData");
 const configFilePath = path.join(userDataPath, "rsync_config.json");
@@ -27,7 +30,7 @@ const configFilePath = path.join(userDataPath, "rsync_config.json");
 async function loadConfig() {
     try {
         const data = await fs.readFile(configFilePath, "utf8");
-        console.log("Load Config", data);
+        console.log("default data", data);
         config = JSON.parse(data);
     } catch (error) {
         console.log(error)
@@ -37,6 +40,76 @@ async function loadConfig() {
 
 async function saveConfig() {
     await fs.writeFile(configFilePath, JSON.stringify(config, null, 2));
+}
+
+function startWatcher() {
+    if (watcher) watcher.close();
+    if (!config.source) {
+        console.log("No source directory set, watcher not started");
+        return;
+    }
+
+    console.log("Starting watcher for source:", config.source);
+    watcher = chokidar.watch(config.source, {
+        ignored: /(^|[\/\\])\../, // Ignore dotfiles
+        persistent: true,
+        ignoreInitial: true, // Ignore initial scan of files
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100,
+        }, // Wait for file writes to finish
+    });
+
+    const debouncedSync = debounce(syncFolder, 1000);
+    watcher
+        .on("add", (path) => {
+            console.log("File added:", path);
+            debouncedSync();
+        })
+        .on("change", (path) => {
+            console.log("File changed:", path);
+            debouncedSync();
+        })
+        .on("unlink", (path) => {
+            console.log("File deleted:", path);
+            debouncedSync();
+        })
+        .on("addDir", (path) => {
+            console.log("Directory added:", path);
+            debouncedSync();
+        })
+        .on("unlinkDir", (path) => {
+            console.log("Directory deleted:", path);
+            debouncedSync();
+        })
+        .on("error", (error) => console.error("Watcher error:", error))
+        .on("ready", () => console.log("Watcher is ready"));
+}
+
+// Debounce function to prevent rapid successive syncs
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            console.log("Debounced sync triggered");
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+function syncFolder() {
+
+    const rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+
+    exec(rsyncCommand, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Sync failed: ${error.message}`);
+            return;
+        }
+        if (stderr) console.error("Rsync Stderr:", stderr);
+        console.log("Rsync Output:", stdout);
+    });
 }
 
 function createWindow() {
@@ -60,19 +133,21 @@ function createWindow() {
 
     // Hide instead of closing
     mainWindow.on('close', (e) => {
-        if (!app.isQuitting) {
-            e.preventDefault();
-            mainWindow.hide();
-        }
+        app.isQuitting = true;
+        app.quit();
+        // if (!app.isQuitting) {
+        //     e.preventDefault();
+        //     mainWindow.hide();
+        // }
     });
 
     createTray();
 }
 
 function createTray() {
+
     const iconPath = path.join(app.getAppPath(), 'assets', 'icon.png');
     tray = new Tray(iconPath);
-    // tray = new Tray(path.join(__dirname, 'assets/icon.png')); // Tray icon
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -148,6 +223,18 @@ ipcMain.on("set-config", (event, newConfig) => {
         // startWatcher(); // Restart watcher with new config
     }).catch(err => {
         event.reply("config-saved", { success: false, message: err.message });
+    });
+});
+
+// Handle toggle switch for auto sync
+ipcMain.on("toggle-auto-sync", (event, enabled) => {
+    config.autoSyncEnabled = enabled;
+    saveConfig().then(() => {
+        event.reply("auto-sync-toggled", { success: true, enabled });
+        if (enabled) startWatcher(); // Start watcher if enabled
+        else if (watcher) watcher.close(); // Stop watcher if disabled
+    }).catch(err => {
+        event.reply("auto-sync-toggled", { success: false, message: err.message });
     });
 });
 

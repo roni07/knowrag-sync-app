@@ -29,11 +29,6 @@ function togglePage() {
     }
 }
 
-// Event listeners
-// trayBtn.addEventListener('click', () => {
-//     ipcRenderer.send('minimize-to-tray');
-// });
-
 minimizeBtn.addEventListener('click', () => {
     ipcRenderer.send('minimize-to-tray');
 });
@@ -50,11 +45,39 @@ toggle.addEventListener("click", () => {
 
     if (toggle.classList.contains("active")) {
         syncSwitchLabel.textContent = "Connected";
+        ipcRenderer.send("toggle-auto-sync", true);
         ipcRenderer.send("sync-folder");
     } else {
         syncSwitchLabel.textContent = "Disconnected";
+        ipcRenderer.send("toggle-auto-sync", false);
     }
 });
+
+function showToast(message, type = "info") {
+    // Remove existing toast if any
+    const existingToast = document.getElementById("toast");
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Create toast element
+    const toast = document.createElement("div");
+    toast.id = "toast";
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    // Add to document
+    document.body.appendChild(toast);
+
+    // Show toast with animation
+    setTimeout(() => toast.classList.add("show"), 10);
+
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
 /*Folder Selection*/
 document.getElementById("selectFolder").addEventListener("click", () => {
@@ -63,6 +86,28 @@ document.getElementById("selectFolder").addEventListener("click", () => {
 
 document.getElementById("changeFolder").addEventListener("click", () => {
     ipcRenderer.send("select-folder");
+});
+
+document.getElementById("saveConfig").addEventListener("click", () => {
+
+    const destination = document.getElementById("serverAddress").value;
+    const source = document.getElementById("selectedFolder").dataset.path;
+    // const password = document.getElementById("passwordInput").value;
+
+    if (!source || !destination) {
+        // if (!source || !destination || !password) {
+        // document.getElementById("syncStatus").textContent = "Please select a folder, enter a destination";
+        showToast("Please select source and destination", "error");
+        return;
+    }
+
+    const config = {
+        source, destination
+    }
+
+    ipcRenderer.send("set-config", config);
+    showToast("Configuration saved", "success");
+
 });
 
 ipcRenderer.on("folder-selected", (event, folderPath) => {
@@ -99,30 +144,15 @@ ipcRenderer.on("config-loaded", (event, config) => {
     }
 
     document.getElementById("serverAddress").value = config.destination || "";
-    document.getElementById("passwordInput").value = config.password || "";
-    syncSwitchLabel.textContent = config.autoSyncEnabled ? "Connected" : "Disconnected";
-    toggle.classList.add(config.autoSyncEnabled ? "active" : "inactive");
 
-});
-
-document.getElementById("saveConfig").addEventListener("click", () => {
-    const source = document.getElementById("selectedFolder").dataset.path;
-    const destination = document.getElementById("serverAddress").value;
-    const password = document.getElementById("passwordInput").value;
-
-    if (!source || !destination || !password) {
-        document.getElementById("syncStatus").textContent = "Please select a folder, enter a destination, and provide a password.";
-        return;
+    if (config.autoSyncEnabled) {
+        toggle.classList.add("active");
+        toggle.classList.remove("inactive");
+        syncSwitchLabel.textContent = "Connected";
+    } else {
+        toggle.classList.add("inactive");
+        toggle.classList.remove("active");
+        syncSwitchLabel.textContent = "Disconnected";
     }
 
-    const config = {
-        source, destination, password
-    }
-
-    ipcRenderer.send("set-config", config);
-    // ipcRenderer.send("sync-folder", { folderPath, destination, password });
-});
-
-ipcRenderer.on("sync-status", (event, status) => {
-    document.getElementById("syncStatus").textContent = status.message;
 });

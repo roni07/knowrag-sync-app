@@ -34,6 +34,10 @@
     --input-bgc: #ECECEC;
     --color-primary: #CD47F9;
     --color-primary-gradient: linear-gradient(135deg, #CD47F9 0%, #8781FB 100%);
+    --color-green: #4CAF50;
+    --color-red: #F44336;
+    --color-info: #2196F3;
+    --color-inactive-bgc: #DDDDDD;
 }
 
 html, body {
@@ -82,7 +86,7 @@ html, body {
 }
 
 .app-bar button:hover {
-    color: #ddd;
+    color: var(--color-inactive-bgc);
 }
 
 .logo {
@@ -233,7 +237,7 @@ html, body {
 }
 
 .switch.inactive {
-    background: #ddd;
+    background: var(--color-inactive-bgc);
 }
 
 .toggle-circle {
@@ -256,6 +260,42 @@ html, body {
     font-size: 20px;
     font-weight: 500;
 }
+
+/*Toast*/
+
+.toast {
+    width: 300px;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--color-white);
+    padding: 12px 24px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    border-left: 4px solid var(--color-green);
+}
+
+.toast.error {
+    border-left: 4px solid var(--color-red);
+}
+
+.toast.info {
+    border-left: 4px solid var(--color-info);
+}
+
 
 /*Common*/
 .input-label {

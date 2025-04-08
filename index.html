@@ -42,15 +42,85 @@
         <!-- Default Page -->
         <div class="page default-page" id="default-page">
             <div class="content">
-                <button id="tray-btn">Minimize to Tray</button>
+
+                <p class="file-sync-title text-primary-gradient-color">
+                    File Sync
+                </p>
+
+                <div class="switch-wrapper">
+                    <div class="switch active" id="toggleSwitch">
+                        <div class="toggle-circle"></div>
+                    </div>
+                    <div class="sync-switch-label" id="syncSwitchLabel">Connected</div>
+                </div>
+
             </div>
         </div>
 
         <!-- Settings Page -->
         <div class="page settings-page" id="settings-page">
             <div class="content">
-                <h2>Settings</h2>
-                <p>This is the settings page. Add your settings here.</p>
+
+                <p class="file-sync-title text-primary-gradient-color">
+                    File Sync
+                </p>
+
+
+                <div>
+
+                    <label for="serverAddress" class="input-label">
+                        Server Address
+                    </label>
+
+                    <input
+                            type="text"
+                            id="serverAddress"
+                            placeholder="Enter server address here"
+                    >
+
+                </div>
+
+                <div>
+                    <label for="selectFolder" class="file-location-input-label">
+                        <span>
+                            File Location
+                        </span>
+                        <span id="changeFolder" class="change-folder text-primary-gradient-color hidden">
+                            Change
+                        </span>
+                    </label>
+                    <div id="selectFolder" class="folder-selector">
+                        <div class="folder-selector-title-wrapper">
+                            <img
+                                    src="assets/icons/hard_drive.svg"
+                                    alt="hard_drive"
+                                    class="hard-drive-icon"
+                            >
+                            <span>
+                                File Location
+                            </span>
+
+                        </div>
+                        <p>Please select your files location by</p>
+                        <p>clicking <u>here</u></p>
+                    </div>
+
+                    <p id="selectedFolder" class="selected-folder"></p>
+
+                </div>
+
+
+<!--                <input type="password" id="passwordInput" placeholder="Enter SSH Password"/>-->
+
+                <button
+                        id="saveConfig"
+                        class="complete-setup-btn"
+                        disabled
+                >
+                    Complete Setup
+                </button>
+                <p id="syncStatus"></p>
+
             </div>
         </div>
     </div>

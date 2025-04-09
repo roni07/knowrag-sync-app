@@ -19,6 +19,32 @@ const closeBtn = document.getElementById('close-btn');
 const toggle = document.getElementById("toggleSwitch");
 const syncSwitchLabel = document.getElementById("syncSwitchLabel");
 
+function showToast(message, type = "info") {
+    // Remove existing toast if any
+    const existingToast = document.getElementById("toast");
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Create toast element
+    const toast = document.createElement("div");
+    toast.id = "toast";
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    // Add to document
+    document.body.appendChild(toast);
+
+    // Show toast with animation
+    setTimeout(() => toast.classList.add("show"), 10);
+
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Toggle between pages
 function togglePage() {
     isSettingsPage = !isSettingsPage;
@@ -50,34 +76,9 @@ toggle.addEventListener("click", () => {
     } else {
         syncSwitchLabel.textContent = "Disconnected";
         ipcRenderer.send("toggle-auto-sync", false);
+        showToast("Auto sync off", "info");
     }
 });
-
-function showToast(message, type = "info") {
-    // Remove existing toast if any
-    const existingToast = document.getElementById("toast");
-    if (existingToast) {
-        existingToast.remove();
-    }
-
-    // Create toast element
-    const toast = document.createElement("div");
-    toast.id = "toast";
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-
-    // Add to document
-    document.body.appendChild(toast);
-
-    // Show toast with animation
-    setTimeout(() => toast.classList.add("show"), 10);
-
-    // Auto hide after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove("show");
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
 
 /*Folder Selection*/
 document.getElementById("selectFolder").addEventListener("click", () => {
@@ -155,4 +156,49 @@ ipcRenderer.on("config-loaded", (event, config) => {
         syncSwitchLabel.textContent = "Disconnected";
     }
 
+});
+
+// ipcRenderer.on("sync-status", (event, status) => {
+//     if (status.success) {
+//         showToast("Sync completed successfully", "success");
+//     } else {
+//         showToast(status.message, "error");
+//         console.log(status.message);
+//     }
+// });
+
+ipcRenderer.on("sync-status", (event, status) => {
+    if (status.success) {
+        showToast("Sync completed successfully", "success");
+    } else {
+        // Format error message for better user experience
+        let userFriendlyMessage = "Sync failed";
+
+        if (status.message) {
+            // Handle specific rsync error patterns
+            if (status.message.includes("No route to host")) {
+                userFriendlyMessage = "Cannot reach the server - Check network connection";
+            } else if (status.message.includes("Connection refused")) {
+                userFriendlyMessage = "Server refused connection - Check if SSH is running";
+            } else if (status.message.includes("Permission denied")) {
+                userFriendlyMessage = "Access denied - Check your credentials";
+            } else if (status.message.includes("No such file or directory")) {
+                userFriendlyMessage = "Source or destination path doesn't exist";
+            } else if (status.message.includes("Host key verification failed")) {
+                userFriendlyMessage = "SSH security verification failed";
+            } else if (status.message.includes("connection unexpectedly closed")) {
+                userFriendlyMessage = "Connection lost during transfer";
+            } else if (status.message.includes("Operation timed out")) {
+                userFriendlyMessage = "Connection timed out - Server may be unresponsive";
+            } else {
+                // Generic fallback for other errors
+                userFriendlyMessage = "Sync failed - Check server address and credentials";
+            }
+        }
+
+        showToast(userFriendlyMessage, "error");
+
+        // Log the full error for debugging
+        console.error("Full sync error:", status.message);
+    }
 });

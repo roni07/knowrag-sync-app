@@ -19,7 +19,6 @@ let tray;
 let config = {
     source: "",
     destination: "",
-    password: "jb2023",
     autoSyncEnabled: false,
 };
 
@@ -110,9 +109,9 @@ function syncFolder() {
     let rsyncCommand;
 
     if (os.platform() === 'win32') {
-        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz '${normalizePath(config.source)}' ${config.destination}`;
+        rsyncCommand = `wsl rsync -avz '${normalizePath(config.source)}' ${config.destination}`;
     } else {
-        rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+        rsyncCommand = `rsync -avz '${config.source}' ${config.destination}`;
     }
 
     exec(rsyncCommand, (error, stdout, stderr) => {

@@ -31,7 +31,8 @@ const configFilePath = path.join(userDataPath, "rsync_config.json");
 function normalizePath(p) {
     if (!p) return '';
     let normalized = path.normalize(p);
-    normalized = normalized.replace(/^([A-Z]):/, '/mnt/$1').replace(/\\/g, '/');
+    // normalized = normalized.replace(/^([A-Z]):/, '/mnt/$1').replace(/\\/g, '/');
+    normalized = normalized.replace(/^([A-Za-z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`).replace(/\\/g, '/');
     return normalized;
 }
 
@@ -57,7 +58,6 @@ function startWatcher() {
         return;
     }
 
-    console.log("Starting watcher for source:", config.source);
     watcher = chokidar.watch(config.source, {
         ignored: /(^|[\/\\])\../, // Ignore dotfiles
         persistent: true,

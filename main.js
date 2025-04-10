@@ -207,7 +207,7 @@ ipcMain.on("sync-folder", (event) => {
     const testSource = "/mnt/c/Users/ZAAG SYS/Desktop/rsync-wind";
 
     if (os.platform() === 'win32') {
-        rsyncCommand = `sshpass -p '${config.password}' rsync -avz ${testSource} '${config.destination}'`;
+        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz '${testSource}' ${config.destination}`;
         // rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz "'${normalizePath(config.source)}'" '${config.destination}'`;
         console.log("COMMAND", rsyncCommand)
     } else {

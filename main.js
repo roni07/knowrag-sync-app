@@ -11,6 +11,7 @@ const path = require('path');
 const chokidar = require("chokidar");
 const fs = require("fs").promises;
 const {exec} = require("child_process");
+const os = require("os");
 
 let mainWindow;
 let tray;
@@ -26,6 +27,13 @@ let watcher;
 
 const userDataPath = app.getPath("userData");
 const configFilePath = path.join(userDataPath, "rsync_config.json");
+
+function normalizePath(p) {
+    if (!p) return '';
+    let normalized = path.normalize(p);
+    normalized = normalized.replace(/^([A-Z]):/, '/mnt/$1').replace(/\\/g, '/');
+    return normalized;
+}
 
 async function loadConfig() {
     try {
@@ -195,7 +203,13 @@ ipcMain.on("sync-folder", (event) => {
 // ipcMain.on("sync-folder", (event, {folderPath, destination, password}) => {
     // Ensure the destination ends with a slash for rsync to treat it as a directory
 
-    const rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+    let rsyncCommand;
+
+    if (os.platform() === 'win32') {
+        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz '${normalizePath(config.source)}' '${config.destination}'`;
+    } else {
+        rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+    }
 
     exec(rsyncCommand, (error, stdout, stderr) => {
         if (error) {
@@ -217,12 +231,12 @@ ipcMain.on('minimize-to-tray', () => {
 
 // Handle initial configuration setup
 ipcMain.on("set-config", (event, newConfig) => {
-    config = { ...config, ...newConfig };
+    config = {...config, ...newConfig};
     saveConfig().then(() => {
-        event.reply("config-saved", { success: true });
+        event.reply("config-saved", {success: true});
         // startWatcher(); // Restart watcher with new config
     }).catch(err => {
-        event.reply("config-saved", { success: false, message: err.message });
+        event.reply("config-saved", {success: false, message: err.message});
     });
 });
 
@@ -230,11 +244,11 @@ ipcMain.on("set-config", (event, newConfig) => {
 ipcMain.on("toggle-auto-sync", (event, enabled) => {
     config.autoSyncEnabled = enabled;
     saveConfig().then(() => {
-        event.reply("auto-sync-toggled", { success: true, enabled });
+        event.reply("auto-sync-toggled", {success: true, enabled});
         if (enabled) startWatcher(); // Start watcher if enabled
         else if (watcher) watcher.close(); // Stop watcher if disabled
     }).catch(err => {
-        event.reply("auto-sync-toggled", { success: false, message: err.message });
+        event.reply("auto-sync-toggled", {success: false, message: err.message});
     });
 });
 

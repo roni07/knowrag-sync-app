@@ -19,7 +19,7 @@
     "productName": "Knowrag Sync App",
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": false,

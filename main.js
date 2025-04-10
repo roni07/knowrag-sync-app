@@ -142,7 +142,7 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
 
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     // Hide instead of closing
     mainWindow.on('close', (e) => {
@@ -205,7 +205,7 @@ ipcMain.on("select-folder", async (event) => {
 
 // Handle rsync transfer of folder
 ipcMain.on("sync-folder", (event) => {
-// ipcMain.on("sync-folder", (event, {folderPath, destination, password}) => {
+
     let rsyncCommand;
 
     if (os.platform() === 'win32') {

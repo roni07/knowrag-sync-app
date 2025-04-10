@@ -206,7 +206,7 @@ ipcMain.on("sync-folder", (event) => {
     let rsyncCommand;
 
     if (os.platform() === 'win32') {
-        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz '${normalizePath(config.source)}' '${config.destination}'`;
+        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz "'${normalizePath(config.source)}'" '${config.destination}'`;
     } else {
         rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
     }

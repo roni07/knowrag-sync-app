@@ -31,7 +31,6 @@ const configFilePath = path.join(userDataPath, "rsync_config.json");
 function normalizePath(p) {
     if (!p) return '';
     let normalized = path.normalize(p);
-    // normalized = normalized.replace(/^([A-Z]):/, '/mnt/$1').replace(/\\/g, '/');
     normalized = normalized.replace(/^([A-Za-z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`).replace(/\\/g, '/');
     return normalized;
 }
@@ -108,7 +107,13 @@ function debounce(func, wait) {
 
 function syncFolder() {
 
-    const rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+    let rsyncCommand;
+
+    if (os.platform() === 'win32') {
+        rsyncCommand = `wsl sshpass -p '${config.password}' rsync -avz '${normalizePath(config.source)}' ${config.destination}`;
+    } else {
+        rsyncCommand = `sshpass -p '${config.password}' rsync -avz '${config.source}' ${config.destination}`;
+    }
 
     exec(rsyncCommand, (error, stdout, stderr) => {
         if (error) {
